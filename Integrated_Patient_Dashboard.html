@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated Patient Care Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --light-gray: #f1f5f9;
+            --border: #e2e8f0;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .patient-info {
+            flex: 1;
+        }
+
+        .patient-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .patient-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .patient-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-badges {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Main Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--gray);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .platform-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .platform-tag.healthsnap {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .platform-tag.clinect {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Vital Signs Grid */
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .vital-card {
+            background: var(--light-gray);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid var(--gray);
+            transition: all 0.3s ease;
+        }
+
+        .vital-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .vital-card.normal {
+            border-left-color: var(--success);
+        }
+
+        .vital-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .vital-card.danger {
+            border-left-color: var(--danger);
+        }
+
+        .vital-label {
+            font-size: 12px;
+            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .vital-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .vital-unit {
+            font-size: 14px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .vital-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .vital-status.normal {
+            color: var(--success);
+        }
+
+        .vital-status.warning {
+            color: var(--warning);
+        }
+
+        .vital-status.danger {
+            color: var(--danger);
+        }
+
+        .trend-arrow {
+            font-size: 16px;
+        }
+
+        /* PRO Scores */
+        .pro-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .pro-item {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+        }
+
+        .pro-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .pro-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .pro-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .pro-date {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .pro-score {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .pro-description {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+
+        .pro-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .pro-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .pro-bar-fill.excellent {
+            background: var(--success);
+        }
+
+        .pro-bar-fill.good {
+            background: #3b82f6;
+        }
+
+        .pro-bar-fill.fair {
+            background: var(--warning);
+        }
+
+        .pro-bar-fill.poor {
+            background: var(--danger);
+        }
+
+        /* Alert List */
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            background: var(--light-gray);
+        }
+
+        .alert-item.high {
+            border-left-color: var(--danger);
+            background: #fef2f2;
+        }
+
+        .alert-item.medium {
+            border-left-color: var(--warning);
+            background: #fffbeb;
+        }
+
+        .alert-item.low {
+            border-left-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .alert-icon {
+            font-size: 20px;
+            min-width: 24px;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .alert-text {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 4px;
+        }
+
+        .alert-time {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Full Width Section */
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: var(--light-gray);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .vitals-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .vitals-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .patient-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: start;
+            }
+        }
+
+        /* Correlation Insights */
+        .insight-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .insight-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-text {
+            font-size: 14px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        .recommendations {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .recommendation-item {
+            padding: 8px 0;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+        }
+
+        .recommendation-item::before {
+            content: '→';
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <div class="patient-info">
+                <div class="patient-name">Sarah Johnson</div>
+                <div class="patient-meta">
+                    <span>📋 MRN: 12345678</span>
+                    <span>👤 67 years old, Female</span>
+                    <span>🏥 Dr. Martinez - Cardiology</span>
+                </div>
+            </div>
+            <div class="status-badges">
+                <div class="badge success">Active Monitoring</div>
+                <div class="badge warning">CHF - NYHA Class II</div>
+                <div class="badge info">Diabetes Type 2</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="dashboard-grid">
+            <!-- Left Column: Vitals -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">
+                                <span>📊</span> Remote Patient Monitoring
+                            </div>
+                            <div class="card-subtitle">Last 24 Hours</div>
+                        </div>
+                        <span class="platform-tag healthsnap">HealthSnap</span>
+                    </div>
+                    <div class="vitals-grid">
+                        <div class="vital-card normal">
+                            <div class="vital-label">Blood Pressure</div>
+                            <div class="vital-value">128<span class="vital-unit">/82</span></div>
+                            <div class="vital-status normal">
+                                <span class="trend-arrow">↓</span>
+                                Normal - Improving
+                            </div>
+                        </div>
+
+                        <div class="vital-card warning">
+                            <div class="vital-label">Weight</div>
+                            <div class="vital-value">178<span class="vital-unit">lbs</span></div>
+                            <div class="vital-status warning">
+                                <span class="trend-arrow">↑</span>
+                                +2.5 lbs in 3 days
+                            </div>
+                        </div>
+
+                        <div class="vital-card normal">
+                            <div class="vital-label">Blood Glucose</div>
+                            <div class="vital-value">118<span class="vital-unit">mg/dL</span></div>
+                            <div class="vital-status normal">
+                                <span class="trend-arrow">→</span>
+                                Within Target
+                            </div>
+                        </div>
+
+                        <div class="vital-card normal">
+                            <div class="vital-label">SpO2</div>
+                            <div class="vital-value">96<span class="vital-unit">%</span></div>
+                            <div class="vital-status normal">
+                                <span class="trend-arrow">→</span>
+                                Normal
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trends Chart -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>📈</span> 30-Day Trends
+                        </div>
+                        <div class="tabs" id="chartTabs">
+                            <button class="tab active" onclick="switchChart('bp')">Blood Pressure</button>
+                            <button class="tab" onclick="switchChart('weight')">Weight</button>
+                            <button class="tab" onclick="switchChart('glucose')">Glucose</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: PROs and Alerts -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">
+                                <span>💬</span> Patient-Reported Outcomes
+                            </div>
+                            <div class="card-subtitle">Recent Assessments</div>
+                        </div>
+                        <span class="platform-tag clinect">Clinect</span>
+                    </div>
+                    <div class="pro-list">
+                        <div class="pro-item">
+                            <div class="pro-header">
+                                <div class="pro-name">KCCQ (Kansas City Cardiomyopathy)</div>
+                                <div class="pro-date">Today</div>
+                            </div>
+                            <div class="pro-score" style="color: var(--warning);">68/100</div>
+                            <div class="pro-description">Fair - Moderate symptoms affecting daily activities</div>
+                            <div class="pro-bar">
+                                <div class="pro-bar-fill fair" style="width: 68%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="pro-item">
+                            <div class="pro-header">
+                                <div class="pro-name">PHQ-9 (Depression Screening)</div>
+                                <div class="pro-date">2 days ago</div>
+                            </div>
+                            <div class="pro-score" style="color: var(--success);">4/27</div>
+                            <div class="pro-description">Minimal depression</div>
+                            <div class="pro-bar">
+                                <div class="pro-bar-fill excellent" style="width: 85%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="pro-item">
+                            <div class="pro-header">
+                                <div class="pro-name">Medication Adherence</div>
+                                <div class="pro-date">3 days ago</div>
+                            </div>
+                            <div class="pro-score" style="color: var(--success);">90%</div>
+                            <div class="pro-description">Excellent adherence to prescribed regimen</div>
+                            <div class="pro-bar">
+                                <div class="pro-bar-fill excellent" style="width: 90%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="pro-item">
+                            <div class="pro-header">
+                                <div class="pro-name">Shortness of Breath Scale</div>
+                                <div class="pro-date">Today</div>
+                            </div>
+                            <div class="pro-score" style="color: var(--warning);">6/10</div>
+                            <div class="pro-description">Moderate difficulty with stairs</div>
+                            <div class="pro-bar">
+                                <div class="pro-bar-fill fair" style="width: 60%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="pro-item">
+                            <div class="pro-header">
+                                <div class="pro-name">Patient Satisfaction (NPS)</div>
+                                <div class="pro-date">1 week ago</div>
+                            </div>
+                            <div class="pro-score" style="color: var(--success);">9/10</div>
+                            <div class="pro-description">Promoter - Very satisfied with care</div>
+                            <div class="pro-bar">
+                                <div class="pro-bar-fill excellent" style="width: 90%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts Section -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>🔔</span> Recent Alerts & Interventions
+                </div>
+            </div>
+            <div class="alert-list">
+                <div class="alert-item high">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <div class="alert-title">Weight Increase Alert</div>
+                        <div class="alert-text">Patient gained 2.5 lbs in 3 days. Combined with KCCQ score decrease (75→68), possible fluid retention. Care coordinator contacted patient - reported increased swelling.</div>
+                        <div class="alert-time">2 hours ago • Action: Diuretic adjustment ordered</div>
+                    </div>
+                </div>
+
+                <div class="alert-item medium">
+                    <div class="alert-icon">💊</div>
+                    <div class="alert-content">
+                        <div class="alert-title">Symptom Survey Triggered</div>
+                        <div class="alert-text">Shortness of breath score increased from 4/10 to 6/10. Automated follow-up survey sent to assess additional symptoms.</div>
+                        <div class="alert-time">5 hours ago • Status: Survey completed</div>
+                    </div>
+                </div>
+
+                <div class="alert-item low">
+                    <div class="alert-icon">✅</div>
+                    <div class="alert-content">
+                        <div class="alert-title">Blood Pressure Improvement</div>
+                        <div class="alert-text">BP trending down consistently. Average 128/82 (down from 142/88 last week). Medication titration effective.</div>
+                        <div class="alert-time">1 day ago • Action: Continue current plan</div>
+                    </div>
+                </div>
+
+                <div class="alert-item low">
+                    <div class="alert-icon">📋</div>
+                    <div class="alert-content">
+                        <div class="alert-title">CCM Touchpoint Completed</div>
+                        <div class="alert-text">Care coordinator completed monthly CCM call. Patient education on salt restriction reinforced. Medication reconciliation completed.</div>
+                        <div class="alert-time">2 days ago • 25 minutes documented</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div class="insight-card">
+            <div class="insight-title">
+                <span>🤖</span> AI-Powered Correlation Insights
+            </div>
+            <div class="insight-text">
+                <strong>Pattern Detected:</strong> Weight increase (↑2.5 lbs) correlates with worsening KCCQ functional score (75→68) and increased shortness of breath (4→6/10). This pattern suggests early CHF decompensation despite stable blood pressure and glucose.
+            </div>
+            <div class="recommendations">
+                <div style="font-weight: 600; margin-bottom: 8px;">Recommended Actions:</div>
+                <div class="recommendation-item">Consider diuretic dose adjustment (completed)</div>
+                <div class="recommendation-item">Schedule cardiology follow-up within 1 week</div>
+                <div class="recommendation-item">Increase monitoring frequency to twice daily weights</div>
+                <div class="recommendation-item">Send dietary counseling resources via Clinect</div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>⚡</span> Quick Actions
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary">📞 Contact Patient</button>
+                <button class="btn btn-secondary">📝 Send PRO Survey</button>
+                <button class="btn btn-secondary">📊 View Full History</button>
+                <button class="btn btn-secondary">👨‍⚕️ Schedule Appointment</button>
+                <button class="btn btn-secondary">💊 Adjust Medications</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart.js setup
+        const ctx = document.getElementById('trendsChart').getContext('2d');
+        
+        const dates = [];
+        for (let i = 30; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        }
+
+        const bpData = {
+            labels: dates,
+            datasets: [{
+                label: 'Systolic',
+                data: [145, 143, 148, 142, 144, 140, 141, 138, 142, 139, 137, 135, 138, 136, 134, 133, 135, 132, 131, 133, 130, 132, 129, 131, 130, 128, 129, 127, 128, 128, 128],
+                borderColor: 'rgb(239, 68, 68)',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                tension: 0.4
+            }, {
+                label: 'Diastolic',
+                data: [92, 90, 93, 89, 91, 88, 89, 86, 88, 87, 85, 84, 86, 85, 83, 82, 84, 81, 80, 82, 79, 81, 78, 80, 79, 77, 78, 76, 77, 82, 82],
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4
+            }]
+        };
+
+        const weightData = {
+            labels: dates,
+            datasets: [{
+                label: 'Weight (lbs)',
+                data: [174, 174.5, 174, 173.5, 174, 173, 173.5, 173, 172.5, 173, 172, 172.5, 172, 171.5, 172, 171, 171.5, 171, 170.5, 171, 170, 170.5, 175, 175.5, 176, 176.5, 177, 177.5, 178, 178, 178],
+                borderColor: 'rgb(245, 158, 11)',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        };
+
+        const glucoseData = {
+            labels: dates,
+            datasets: [{
+                label: 'Glucose (mg/dL)',
+                data: [125, 118, 122, 115, 120, 117, 123, 119, 121, 116, 118, 114, 122, 120, 117, 119, 115, 121, 118, 116, 120, 122, 117, 119, 115, 118, 120, 116, 119, 117, 118],
+                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        };
+
+        let currentChart = new Chart(ctx, {
+            type: 'line',
+            data: bpData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+
+        function switchChart(type) {
+            // Update tab states
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update chart
+            let newData;
+            if (type === 'bp') {
+                newData = bpData;
+            } else if (type === 'weight') {
+                newData = weightData;
+            } else if (type === 'glucose') {
+                newData = glucoseData;
+            }
+
+            currentChart.data = newData;
+            currentChart.update();
+        }
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const vitals = document.querySelectorAll('.vital-value');
+            vitals.forEach(vital => {
+                vital.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    vital.style.transform = 'scale(1)';
+                }, 200);
+            });
+        }, 30000);
+    </script>
+</body>
+</html>

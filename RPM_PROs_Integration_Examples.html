@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPM + PROs Integration Examples</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --healthsnap: #059669;
+            --clinect: #4f46e5;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: var(--gray);
+            margin-bottom: 50px;
+        }
+
+        .example-card {
+            background: var(--light);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            border-left: 6px solid;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .example-card.clinical {
+            border-left-color: #8b5cf6;
+        }
+
+        .example-card.operational {
+            border-left-color: #059669;
+        }
+
+        .example-card.financial {
+            border-left-color: #d97706;
+        }
+
+        .example-card.research {
+            border-left-color: #0891b2;
+        }
+
+        .example-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .example-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .example-category {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .example-category.clinical {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .example-category.operational {
+            background: #dcfce7;
+            color: #065f46;
+        }
+
+        .example-category.financial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .example-category.research {
+            background: #cffafe;
+            color: #164e63;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin: 24px 0;
+        }
+
+        .data-source {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid;
+        }
+
+        .data-source.healthsnap {
+            border-color: var(--healthsnap);
+        }
+
+        .data-source.clinect {
+            border-color: var(--clinect);
+        }
+
+        .source-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .data-source.healthsnap .source-label {
+            color: var(--healthsnap);
+        }
+
+        .data-source.clinect .source-label {
+            color: var(--clinect);
+        }
+
+        .data-points {
+            list-style: none;
+        }
+
+        .data-points li {
+            padding: 6px 0;
+            font-size: 14px;
+            color: var(--dark);
+        }
+
+        .data-points li strong {
+            font-weight: 600;
+        }
+
+        .correlation-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+
+        .correlation-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .correlation-text {
+            font-size: 15px;
+            line-height: 1.7;
+            opacity: 0.95;
+        }
+
+        .action-box {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .action-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 12px;
+        }
+
+        .action-items {
+            list-style: none;
+        }
+
+        .action-items li {
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+            font-size: 14px;
+            color: var(--dark);
+        }
+
+        .action-items li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: var(--warning);
+        }
+
+        .outcome-box {
+            background: #dcfce7;
+            border-left: 4px solid var(--healthsnap);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .outcome-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #065f46;
+            margin-bottom: 12px;
+        }
+
+        .outcome-text {
+            font-size: 14px;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .metric-highlight {
+            display: inline-block;
+            background: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            margin: 0 4px;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--healthsnap), var(--clinect));
+            margin: 60px 0;
+            border-radius: 2px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            border: 2px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--gray);
+            font-weight: 600;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 24px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--healthsnap), var(--clinect));
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid var(--primary);
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .timeline-content {
+            font-size: 14px;
+            color: var(--dark);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HealthSnap + Clinect Integration</h1>
+        <p class="subtitle">Real-World Scenarios Showing Deep Data Correlation & Clinical Intelligence</p>
+
+        <!-- EXAMPLE 1: Early CHF Decompensation Detection -->
+        <div class="example-card clinical">
+            <div class="example-header">
+                <div>
+                    <div class="example-title">🫀 Early Heart Failure Decompensation Detection</div>
+                </div>
+                <span class="example-category clinical">Clinical Decision Support</span>
+            </div>
+
+            <div class="data-grid">
+                <div class="data-source healthsnap">
+                    <div class="source-label">
+                        <span>📊</span> HealthSnap Data
+                    </div>
+                    <ul class="data-points">
+                        <li><strong>Weight:</strong> ↑ 3.2 lbs over 4 days</li>
+                        <li><strong>Blood Pressure:</strong> 138/86 → 142/90 mmHg</li>
+                        <li><strong>SpO2:</strong> Declining from 96% → 93%</li>
+                        <li><strong>Pattern:</strong> Nocturnal weight gain (fluid retention)</li>
+                    </ul>
+                </div>
+
+                <div class="data-source clinect">
+                    <div class="source-label">
+                        <span>💬</span> Clinect PROs Data
+                    </div>
+                    <ul class="data-points">
+                        <li><strong>KCCQ Score:</strong> Decreased from 72 → 64 (11% drop)</li>
+                        <li><strong>Dyspnea Scale:</strong> Increased from 3/10 → 7/10</li>
+                        <li><strong>Fatigue Level:</strong> "Significant worsening" reported</li>
+                        <li><strong>Daily Activity:</strong> Unable to climb stairs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="correlation-box">
+                <div class="correlation-title">🔗 Integrated Correlation Analysis</div>
+                <div class="correlation-text">
+                    The combination of objective fluid retention (weight ↑, BP ↑, SpO2 ↓) with subjective functional decline (KCCQ ↓11%, dyspnea ↑) creates a <strong>92% predictive accuracy</strong> for CHF decompensation within 7 days. This correlation was detected 4.3 days earlier than either data source alone would have identified.
+                </div>
+            </div>
+
+            <div class="action-box">
+                <div class="action-title">⚡ Triggered Actions</div>
+                <ul class="action-items">
+                    <li>Automated alert sent to care coordinator at 8:15 AM</li>
+                    <li>Patient contacted within 2 hours, confirmed peripheral edema</li>
+                    <li>Telehealth visit scheduled same day with cardiologist</li>
+                    <li>Diuretic dose increased from 20mg → 40mg furosemide</li>
+                    <li>Follow-up KCCQ survey auto-scheduled for 3 days post-intervention</li>
+                </ul>
+            </div>
+
+            <div class="outcome-box">
+                <div class="outcome-title">✅ Clinical Outcome</div>
+                <div class="outcome-text">
+                    Within 5 days: Weight normalized (↓3.8 lbs), KCCQ improved to 69, dyspnea reduced to 4/10. <strong>Hospitalization avoided</strong> — estimated cost savings: <span class="metric-highlight">$8,200</span>. Patient remained home and returned to baseline function.
+                </div>
+            </div>
+        </div>
+
+        <!-- EXAMPLE 2: Diabetes + Depression Correlation -->
+        ... (truncated for brevity in query) ...
+
+    </div>
+</body>
+</html>
