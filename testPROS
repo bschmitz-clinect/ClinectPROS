@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Clinect Outcomes Demo</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body { margin: 0; background:#f6f7fb; }
+    header { padding:16px 20px; background:#fff; border-bottom:1px solid #e6e8f0; position:sticky; top:0; }
+    .wrap { max-width:1100px; margin:0 auto; padding:16px 20px 28px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    .card { background:#fff; border:1px solid #e6e8f0; border-radius:14px; padding:14px; box-shadow:0 1px 2px rgba(0,0,0,.03); }
+    .kpi { flex: 1 1 160px; }
+    .kpi h3 { margin:0; font-size:12px; color:#68708a; font-weight:600; }
+    .kpi .v { margin-top:6px; font-size:24px; font-weight:800; }
+    .pill { display:inline-flex; gap:8px; align-items:center; border:1px solid #e6e8f0; padding:8px 10px; border-radius:999px; background:#fff; }
+    select, button { padding:8px 10px; border-radius:10px; border:1px solid #d9dceb; background:#fff; }
+    button { cursor:pointer; font-weight:700; }
+    .tabs { display:flex; gap:8px; }
+    .tab { padding:10px 12px; border-radius:12px; border:1px solid #e6e8f0; background:#fff; font-weight:800; }
+    .tab.active { border-color:#111827; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { text-align:left; padding:10px; border-bottom:1px solid #eef0f6; font-size:13px; }
+    th { color:#68708a; font-weight:700; }
+    .muted { color:#68708a; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width: 860px){ .grid2 { grid-template-columns: 1fr; } }
+    .spark { height:120px; width:100%; background: linear-gradient(180deg,#fff, #fafbff); border:1px solid #eef0f6; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#68708a; font-weight:700;}
+    .danger { color:#b42318; font-weight:800; }
+    .ok { color:#067647; font-weight:800; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap row" style="align-items:center; justify-content:space-between;">
+    <div style="display:flex; flex-direction:column;">
+      <div style="font-weight:900; font-size:16px;">Clinect Outcomes Dashboard (Demo)</div>
+      <div class="muted" style="font-size:12px;">Patient Scorecard + Practice View (sample data)</div>
+    </div>
+
+    <div class="row" style="align-items:center;">
+      <div class="pill">
+        <span class="muted">Patient</span>
+        <select id="patientSelect"></select>
+      </div>
+      <div class="tabs">
+        <button class="tab active" id="tabPatient">Patient</button>
+        <button class="tab" id="tabPractice">Practice</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- PATIENT VIEW -->
+  <section id="patientView" class="row" style="flex-direction:column; gap:12px;">
+    <div class="card">
+      <div class="row" style="align-items:center; justify-content:space-between;">
+        <div>
+          <div id="ptName" style="font-size:18px; font-weight:900;"></div>
+          <div class="muted" id="ptMeta"></div>
+        </div>
+        <div class="pill">
+          <span class="muted">Days Post-Op</span>
+          <span id="daysPostOp" style="font-weight:900;"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card kpi"><h3>Baseline HOOS JR</h3><div class="v" id="baseHoos">—</div></div>
+      <div class="card kpi"><h3>Latest HOOS JR</h3><div class="v" id="latestHoos">—</div></div>
+      <div class="card kpi"><h3>Δ from Baseline</h3><div class="v" id="deltaHoos">—</div></div>
+      <div class="card kpi"><h3>Modifiable Risk (0–12)</h3><div class="v" id="modRisk">—</div></div>
+      <div class="card kpi"><h3>Comorbidity Score</h3><div class="v" id="comRisk">—</div></div>
+      <div class="card kpi"><h3>Risk Tier</h3><div class="v" id="riskTier">—</div></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div style="font-weight:900; margin-bottom:10px;">Recovery Timeline (HOOS JR)</div>
+        <div class="spark">Loaded timeline points below ↓</div>
+        <table id="timelineTable"></table>
+      </div>
+      <div class="card">
+        <div style="font-weight:900; margin-bottom:10px;">Optimization Profile</div>
+        <table id="riskTable"></table>
+        <div style="margin-top:10px;" class="muted" id="drivers"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRACTICE VIEW -->
+  <section id="practiceView" style="display:none; flex-direction:column; gap:12px;">
+    <div class="row">
+      <div class="card kpi"><h3>Baseline Capture %</h3><div class="v" id="capBase">—</div></div>
+      <div class="card kpi"><h3>30d Capture %</h3><div class="v" id="cap30">—</div></div>
+      <div class="card kpi"><h3>60d Capture %</h3><div class="v" id="cap60">—</div></div>
+      <div class="card kpi"><h3>90d Capture %</h3><div class="v" id="cap90">—</div></div>
+      <div class="card kpi"><h3>Avg Δ @ 90d</h3><div class="v" id="avgDelta90">—</div></div>
+      <div class="card kpi"><h3>High-Risk Share</h3><div class="v" id="highRiskShare">—</div></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:900; margin-bottom:10px;">Patients Needing Outreach (demo logic)</div>
+      <table id="outreachTable"></table>
+    </div>
+  </section>
+</div>
+
+<script>
+  const fmtPct = (n) => (isFinite(n) ? Math.round(n*100) + "%" : "—");
+  const fmtNum = (n) => (n ?? "—");
+
+  function daysBetween(a, b){
+    const A = new Date(a), B = new Date(b);
+    return Math.round((B - A) / (1000*60*60*24));
+  }
+
+  function riskTier(total){
+    if (total <= 4) return "Low";
+    if (total <= 8) return "Medium";
+    return "High";
+  }
+
+  function buildTimelineTable(el, points, baseline){
+    const rows = points.map(p => {
+      const delta = (baseline != null && p.score != null) ? (p.score - baseline) : null;
+      const status = p.completed ? "Complete" : "Missing";
+      const statusClass = p.completed ? "ok" : "danger";
+      return `<tr>
+        <td>${p.timepoint}</td>
+        <td class="${statusClass}">${status}</td>
+        <td>${p.score ?? "—"}</td>
+        <td>${delta ?? "—"}</td>
+      </tr>`;
+    }).join("");
+
+    el.innerHTML = `
+      <thead><tr>
+        <th>Timepoint</th><th>Status</th><th>HOOS JR</th><th>Δ</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>`;
+  }
+
+  function buildRiskTable(el, mod, com){
+    const modRows = Object.entries(mod).map(([k,v]) =>
+      `<tr><td>${k}</td><td>${v.value}</td><td>${v.score}</td></tr>`
+    ).join("");
+
+    const comRows = Object.entries(com).map(([k,v]) =>
+      `<tr><td>${k}</td><td>${v.present ? "Yes" : "No"}</td><td>${v.points}</td></tr>`
+    ).join("");
+
+    el.innerHTML = `
+      <thead><tr><th>Factor</th><th>Value</th><th>Points</th></tr></thead>
+      <tbody>
+        <tr><td colspan="3" class="muted" style="padding-top:14px; font-weight:800;">Modifiable Risk Factors</td></tr>
+        ${modRows}
+        <tr><td colspan="3" class="muted" style="padding-top:14px; font-weight:800;">Comorbidities</td></tr>
+        ${comRows}
+      </tbody>`;
+  }
+
+  function calcCapture(patients, timepoint){
+    const eligible = patients.length;
+    if (!eligible) return NaN;
+    const completed = patients.filter(p => (p.hoos?.find(x=>x.timepoint===timepoint)?.completed)).length;
+    return completed / eligible;
+  }
+
+  function buildOutreach(el, patients){
+    const today = new Date().toISOString().slice(0,10);
+    const rows = patients
+      .map(p => {
+        const dpo = daysBetween(p.surgery.date, today);
+        const tp60 = p.hoos.find(x=>x.timepoint==="60d");
+        const tp90 = p.hoos.find(x=>x.timepoint==="90d");
+        const overdue60 = dpo > 75 && !tp60.completed;
+        const overdue90 = dpo > 120 && !tp90.completed;
+        if (!(overdue60 || overdue90)) return null;
+        const what = overdue90 ? "90d overdue" : "60d overdue";
+        return `<tr>
+          <td>${p.name}</td>
+          <td>${p.surgery.surgeon}</td>
+          <td>${p.surgery.location}</td>
+          <td>${dpo}</td>
+          <td class="danger">${what}</td>
+        </tr>`;
+      })
+      .filter(Boolean)
+      .join("");
+
+    el.innerHTML = `
+      <thead><tr>
+        <th>Patient</th><th>Surgeon</th><th>Location</th><th>Days Post-Op</th><th>Flag</th>
+      </tr></thead>
+      <tbody>${rows || `<tr><td colspan="5" class="muted">Nobody needs outreach (in this fake dataset).</td></tr>`}</tbody>`;
+  }
+
+  async function main(){
+    const res = await fetch("./sample-data.json");
+    const data = await res.json();
+
+    const patientSelect = document.getElementById("patientSelect");
+    data.patients.forEach((p, idx) => {
+      const opt = document.createElement("option");
+      opt.value = idx;
+      opt.textContent = p.name;
+      patientSelect.appendChild(opt);
+    });
+
+    const tabPatient = document.getElementById("tabPatient");
+    const tabPractice = document.getElementById("tabPractice");
+    const patientView = document.getElementById("patientView");
+    const practiceView = document.getElementById("practiceView");
+
+    function setTab(which){
+      const isPatient = which==="patient";
+      tabPatient.classList.toggle("active", isPatient);
+      tabPractice.classList.toggle("active", !isPatient);
+      patientView.style.display = isPatient ? "flex" : "none";
+      practiceView.style.display = isPatient ? "none" : "flex";
+    }
+    tabPatient.onclick = ()=>setTab("patient");
+    tabPractice.onclick = ()=>setTab("practice");
+
+    function renderPatient(idx){
+      const p = data.patients[idx];
+      const today = new Date().toISOString().slice(0,10);
+      const dpo = daysBetween(p.surgery.date, today);
+
+      document.getElementById("ptName").textContent = p.name;
+      document.getElementById("ptMeta").textContent =
+        `MRN ${p.mrn} • ${p.surgery.procedure} • ${p.surgery.surgeon} • ${p.surgery.location} • Surgery ${p.surgery.date}`;
+      document.getElementById("daysPostOp").textContent = dpo;
+
+      const baseline = p.hoos.find(x=>x.timepoint==="baseline")?.score ?? null;
+      const latestCompleted = [...p.hoos].reverse().find(x=>x.completed && x.score!=null);
+      const latest = latestCompleted?.score ?? null;
+
+      document.getElementById("baseHoos").textContent = fmtNum(baseline);
+      document.getElementById("latestHoos").textContent = fmtNum(latest);
+      document.getElementById("deltaHoos").textContent = (baseline!=null && latest!=null) ? (latest - baseline) : "—";
+
+      const modTotal = Object.values(p.risk.modifiable).reduce((a,x)=>a + (x.score||0), 0);
+      const comTotal = Object.values(p.risk.comorbidities).reduce((a,x)=>a + (x.points||0), 0);
+      const total = modTotal + comTotal;
+
+      document.getElementById("modRisk").textContent = modTotal;
+      document.getElementById("comRisk").textContent = comTotal;
+      document.getElementById("riskTier").textContent = riskTier(total);
+
+      buildTimelineTable(document.getElementById("timelineTable"), p.hoos, baseline);
+      buildRiskTable(document.getElementById("riskTable"), p.risk.modifiable, p.risk.comorbidities);
+
+      const drivers = [];
+      Object.entries(p.risk.modifiable).forEach(([k,v])=>drivers.push({k, pts:v.score}));
+      Object.entries(p.risk.comorbidities).forEach(([k,v])=>drivers.push({k, pts:v.points}));
+      drivers.sort((a,b)=>b.pts-a.pts);
+      const top = drivers.filter(x=>x.pts>0).slice(0,4).map(x=>`${x.k} (${x.pts})`).join(", ");
+      document.getElementById("drivers").innerHTML =
+        `<span class="muted">Top drivers:</span> <strong>${top || "None"}</strong>`;
+    }
+
+    function renderPractice(){
+      const pts = data.patients;
+
+      document.getElementById("capBase").textContent = fmtPct(calcCapture(pts, "baseline"));
+      document.getElementById("cap30").textContent  = fmtPct(calcCapture(pts, "30d"));
+      document.getElementById("cap60").textContent  = fmtPct(calcCapture(pts, "60d"));
+      document.getElementById("cap90").textContent  = fmtPct(calcCapture(pts, "90d"));
+
+      const deltas = pts.map(p=>{
+        const b = p.hoos.find(x=>x.timepoint==="baseline")?.score;
+        const s = p.hoos.find(x=>x.timepoint==="90d")?.score;
+        return (b!=null && s!=null) ? (s-b) : null;
+      }).filter(x=>x!=null);
+
+      const avg = deltas.length ? (deltas.reduce((a,x)=>a+x,0) / deltas.length) : NaN;
+      document.getElementById("avgDelta90").textContent = isFinite(avg) ? avg.toFixed(1) : "—";
+
+      const highs = pts.filter(p=>{
+        const mod = Object.values(p.risk.modifiable).reduce((a,x)=>a+(x.score||0),0);
+        const com = Object.values(p.risk.comorbidities).reduce((a,x)=>a+(x.points||0),0);
+        return riskTier(mod+com)==="High";
+      }).length;
+      document.getElementById("highRiskShare").textContent = fmtPct(highs/pts.length);
+
+      buildOutreach(document.getElementById("outreachTable"), pts);
+    }
+
+    patientSelect.onchange = (e)=>renderPatient(+e.target.value);
+
+    renderPatient(0);
+    renderPractice();
+  }
+
+  main().catch(err => {
+    document.body.innerHTML = `<pre style="padding:16px;">Error loading demo: ${err}\n\nIf this happened, make sure sample-data.json is in the repo root next to index.html.</pre>`;
+  });
+</script>
+</body>
+</html>
